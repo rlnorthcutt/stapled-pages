@@ -22,6 +22,29 @@ body {
   color: #111827;
 }
 
+/* Default header/footer layout for all demo documents */
+stapled-doc page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1.75rem;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 11px;
+  color: #9ca3af;
+  letter-spacing: 0.03em;
+  font-family: ui-monospace, monospace;
+}
+
+stapled-doc page-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1.75rem;
+  border-top: 1px solid #e5e7eb;
+  font-size: 11px;
+  color: #9ca3af;
+}
+
 /* ── Explicit mode ─────────────────────────────────────────────────────────── */
 
 /* Stronger shadow on each hard-clipped page */

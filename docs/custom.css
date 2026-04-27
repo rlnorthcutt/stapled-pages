@@ -341,6 +341,11 @@ body > footer.site-footer p {
   gap: 0;
 }
 
+.docs-sidebar nav ul {
+  align-items: start;
+  margin-left: 1rem;
+}
+
 .docs-sidebar nav a {
   display: block;
   padding: 0.3rem 0.6rem;
@@ -402,6 +407,35 @@ body > footer.site-footer p {
 .demo-card-list li {
   padding: 0.2rem 0;
   font-size: 0.875rem;
+}
+
+/* ── Demo listing cards — interactive, whole-card click ─────────────────── */
+
+.demo-card {
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.demo-card h3 {
+  transition: color 0.18s ease;
+}
+
+.demo-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(26, 26, 46, 0.14);
+}
+
+.demo-card:hover h3 {
+  color: var(--color-link);
+}
+
+/* Stretched link — ::after covers the whole card via position:relative on .demo-card */
+.demo-card footer a[role="button"]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
 }
 
 /* =============================================================================
@@ -498,211 +532,6 @@ body > footer.site-footer p {
   max-height: 40rem;
   overflow-y: auto;
   font-size: 0.78rem;
-}
-
-/* =============================================================================
-   STAPLED-PAGES DEMO DOCUMENTS
-   These styles are for the documents rendered inside the sample previews.
-   Uses hard-coded values (not CSS vars) so the documents always look like
-   printed paper regardless of the site's dark/light mode.
-   ============================================================================= */
-
-/* Default header/footer for all demo docs */
-stapled-doc page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 1.75rem;
-  border-bottom: 1px solid #e5e7eb;
-  font-size: 11px;
-  color: #9ca3af;
-  letter-spacing: 0.03em;
-  font-family: ui-monospace, monospace;
-}
-
-stapled-doc page-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 1.75rem;
-  border-top: 1px solid #e5e7eb;
-  font-size: 11px;
-  color: #9ca3af;
-}
-
-/* Sample 1: Staple History — dark header/footer, formal look */
-
-.sample-staple page-header {
-  background: #1a1a2e;
-  color: #80caff;
-  border-bottom-color: #2d3748;
-}
-
-.sample-staple page-footer {
-  background: #1a1a2e;
-  color: rgba(128, 202, 255, 0.55);
-  border-top-color: #2d3748;
-}
-
-.sample-staple s-page {
-  padding: 2.5rem;
-  font-size: 13px;
-  line-height: 1.65;
-  background: #ffffff;
-  color: #111827;
-  font-family: Georgia, 'Times New Roman', serif;
-}
-
-.staple-cover {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  background: #1a1a2e;
-  color: #ffffff;
-  padding: 3rem;
-}
-
-.staple-cover h1 {
-  color: #80caff;
-  font-size: 2rem;
-  line-height: 1.2;
-  margin: 1.5rem 0 0.5rem;
-  font-family: Georgia, serif;
-}
-
-.staple-cover .cover-subtitle {
-  color: rgba(255, 255, 255, 0.65);
-  font-style: italic;
-  font-size: 0.95rem;
-  margin: 0 0 2.5rem;
-}
-
-.staple-cover .cover-year {
-  font-size: 0.65rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: rgba(128, 202, 255, 0.5);
-  font-family: ui-monospace, monospace;
-}
-
-.staple-icon-wrap {
-  width: 5rem;
-  height: 5rem;
-  border: 2px solid rgba(128, 202, 255, 0.3);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto;
-}
-
-.sample-staple s-page h2 {
-  font-size: 1.1rem;
-  border-bottom: 1px solid #e5e7eb;
-  padding-bottom: 0.4rem;
-  margin-top: 1.5rem;
-  margin-bottom: 1rem;
-  color: #1a1a2e;
-}
-
-.sample-staple s-page p {
-  margin-bottom: 0.85rem;
-}
-
-/* Sample 2: Papyrus Protocol — clean whitepaper look */
-
-.sample-papyrus s-page {
-  padding: 2.5rem;
-  font-size: 13px;
-  line-height: 1.7;
-  background: #ffffff;
-  color: #1f2937;
-  font-family: 'Georgia', serif;
-}
-
-.sample-papyrus page-header {
-  background: #f9fafb;
-  font-family: ui-sans-serif, system-ui, sans-serif;
-}
-
-.sample-papyrus page-footer {
-  background: #f9fafb;
-  font-family: ui-sans-serif, system-ui, sans-serif;
-}
-
-.sample-papyrus h1 {
-  font-size: 1.5rem;
-  color: #111827;
-  line-height: 1.25;
-  margin-top: 0;
-}
-
-.sample-papyrus h2 {
-  font-size: 1rem;
-  color: #374151;
-  margin-top: 1.5rem;
-  margin-bottom: 0.6rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-size: 0.8rem;
-}
-
-.sample-papyrus p {
-  margin-bottom: 0.85rem;
-}
-
-/* Sample 3: Flatland — classic typeset look */
-
-.sample-flatland s-page {
-  padding: 2.5rem 3rem;
-  font-size: 13px;
-  line-height: 1.8;
-  background: #fdfcf8;
-  color: #1a1a1a;
-  font-family: 'Georgia', serif;
-}
-
-.sample-flatland page-header {
-  background: #fdfcf8;
-}
-
-.sample-flatland page-footer {
-  background: #fdfcf8;
-}
-
-.sample-flatland h1 {
-  font-size: 1.6rem;
-  text-align: center;
-  margin: 0 0 0.25rem;
-  font-style: italic;
-}
-
-.sample-flatland h2 {
-  font-size: 0.75rem;
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  color: #6b7280;
-  margin: 0 0 2rem;
-}
-
-.sample-flatland h3 {
-  font-size: 1rem;
-  margin-top: 1.5rem;
-  margin-bottom: 0.5rem;
-}
-
-.sample-flatland p {
-  margin-bottom: 0.85rem;
-  text-indent: 1.5em;
-}
-
-.sample-flatland p:first-of-type {
-  text-indent: 0;
 }
 
 /* =============================================================================
