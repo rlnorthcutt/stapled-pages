@@ -1,6 +1,6 @@
 {
   "name": "stapler-js",
-  "version": "0.1.0",
+  "version": "0.5.0",
   "description": "Zero-dependency web component library for print-accurate multi-page documents",
   "scripts": {
     "build": "esbuild src/stapler.ts --bundle --format=iife --outfile=dist/stapler.js && esbuild src/stapler.ts --bundle --format=iife --outfile=dist/stapler.min.js --minify",

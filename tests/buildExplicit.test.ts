@@ -3,6 +3,7 @@ import { Stapler } from '../src/components/StapledPages.js'
 import { PageHeader } from '../src/components/PageHeader.js'
 import { PageFooter } from '../src/components/PageFooter.js'
 import { SPage } from '../src/components/SPage.js'
+import { SPageBody } from '../src/components/SPageBody.js'
 import { PageNumber } from '../src/components/PageNumber.js'
 
 // ── Register custom elements once ────────────────────────────────────────────
@@ -11,6 +12,7 @@ beforeAll(() => {
   if (!customElements.get('page-header'))   customElements.define('page-header', PageHeader)
   if (!customElements.get('page-footer'))   customElements.define('page-footer', PageFooter)
   if (!customElements.get('s-page'))        customElements.define('s-page', SPage)
+  if (!customElements.get('s-page-body'))   customElements.define('s-page-body', SPageBody)
   if (!customElements.get('page-number'))   customElements.define('page-number', PageNumber)
 })
 
@@ -44,18 +46,9 @@ afterEach(() => {
 describe('Explicit mode build', () => {
   beforeEach(() => stubLayout())
 
-  it('detects explicit mode from <s-page> children', () => {
-    const sp = buildExplicit(`
-      <stapled-doc mode="explicit" page-width="816px" page-height="1056px" page-gap="32px">
-        <s-page><p>Content</p></s-page>
-      </stapled-doc>
-    `)
-    expect((sp as unknown as { _mode: string })._mode).toBe('explicit')
-  })
-
   it('sets width and height on each <s-page>', () => {
     const sp = buildExplicit(`
-      <stapled-doc mode="explicit" page-width="816px" page-height="1056px" page-gap="0px">
+      <stapled-doc page-width="816px" page-height="1056px" page-gap="0px">
         <s-page><p>A</p></s-page>
         <s-page><p>B</p></s-page>
       </stapled-doc>
@@ -67,20 +60,32 @@ describe('Explicit mode build', () => {
     })
   })
 
-  it('wraps page children in .sp-page-content', () => {
+  it('auto-wraps plain children in <s-page-body> with data-sp-autowrap', () => {
     const sp = buildExplicit(`
-      <stapled-doc mode="explicit" page-width="816px" page-height="1056px" page-gap="0px">
+      <stapled-doc page-width="816px" page-height="1056px" page-gap="0px">
         <s-page><p>Hello</p><p>World</p></s-page>
       </stapled-doc>
     `)
-    const content = sp.querySelector('.sp-page-content')
-    expect(content).not.toBeNull()
-    expect(content!.querySelectorAll('p').length).toBe(2)
+    const body = sp.querySelector('s-page-body')
+    expect(body).not.toBeNull()
+    expect(body!.hasAttribute('data-sp-autowrap')).toBe(true)
+    expect(body!.querySelectorAll('p').length).toBe(2)
+  })
+
+  it('preserves authored <s-page-body> without data-sp-autowrap', () => {
+    const sp = buildExplicit(`
+      <stapled-doc page-width="816px" page-height="1056px" page-gap="0px">
+        <s-page><s-page-body><p>Content</p></s-page-body></s-page>
+      </stapled-doc>
+    `)
+    const body = sp.querySelector('s-page-body')
+    expect(body).not.toBeNull()
+    expect(body!.hasAttribute('data-sp-autowrap')).toBe(false)
   })
 
   it('stamps header clone into each page', () => {
     const sp = buildExplicit(`
-      <stapled-doc mode="explicit" page-width="816px" page-height="1056px" page-gap="0px">
+      <stapled-doc page-width="816px" page-height="1056px" page-gap="0px">
         <page-header height="48px"><div class="hdr">Header</div></page-header>
         <s-page><p>A</p></s-page>
         <s-page><p>B</p></s-page>
@@ -96,7 +101,7 @@ describe('Explicit mode build', () => {
 
   it('stamps footer clone into each page', () => {
     const sp = buildExplicit(`
-      <stapled-doc mode="explicit" page-width="816px" page-height="1056px" page-gap="0px">
+      <stapled-doc page-width="816px" page-height="1056px" page-gap="0px">
         <page-footer height="32px"><div class="ftr">Footer</div></page-footer>
         <s-page><p>A</p></s-page>
       </stapled-doc>
@@ -108,7 +113,7 @@ describe('Explicit mode build', () => {
 
   it('removes original template elements after build', () => {
     const sp = buildExplicit(`
-      <stapled-doc mode="explicit" page-width="816px" page-height="1056px" page-gap="0px">
+      <stapled-doc page-width="816px" page-height="1056px" page-gap="0px">
         <page-header height="48px"><span>H</span></page-header>
         <page-footer height="32px"><span>F</span></page-footer>
         <s-page><p>A</p></s-page>
@@ -123,7 +128,7 @@ describe('Explicit mode build', () => {
 
   it('skip-first suppresses header on page 1 only', () => {
     const sp = buildExplicit(`
-      <stapled-doc mode="explicit" page-width="816px" page-height="1056px" page-gap="0px">
+      <stapled-doc page-width="816px" page-height="1056px" page-gap="0px">
         <page-header height="48px" skip-first><span>H</span></page-header>
         <s-page id="p1"><p>A</p></s-page>
         <s-page id="p2"><p>B</p></s-page>
@@ -137,7 +142,7 @@ describe('Explicit mode build', () => {
 
   it('skip-pages suppresses header on specified pages', () => {
     const sp = buildExplicit(`
-      <stapled-doc mode="explicit" page-width="816px" page-height="1056px" page-gap="0px">
+      <stapled-doc page-width="816px" page-height="1056px" page-gap="0px">
         <page-header height="48px" skip-pages="2"><span>H</span></page-header>
         <s-page id="p1"><p>A</p></s-page>
         <s-page id="p2"><p>B</p></s-page>
@@ -149,9 +154,47 @@ describe('Explicit mode build', () => {
     expect(sp.querySelector('#p3 page-header')).not.toBeNull()
   })
 
+  it('per-page page-header overrides document-level template for that page only', () => {
+    const sp = buildExplicit(`
+      <stapled-doc page-width="816px" page-height="1056px" page-gap="0px">
+        <page-header height="48px"><span class="global-hdr">Global</span></page-header>
+        <s-page id="p1">
+          <page-header height="40px"><span class="custom-hdr">Custom</span></page-header>
+          <p>Content</p>
+        </s-page>
+        <s-page id="p2"><p>Other</p></s-page>
+      </stapled-doc>
+    `)
+    // Page 1 uses per-page override
+    const p1hdr = sp.querySelector('#p1 > page-header')
+    expect(p1hdr).not.toBeNull()
+    expect(p1hdr!.querySelector('.custom-hdr')).not.toBeNull()
+    expect(p1hdr!.querySelector('.global-hdr')).toBeNull()
+    // Page 2 uses global template clone
+    const p2hdr = sp.querySelector('#p2 > page-header')
+    expect(p2hdr).not.toBeNull()
+    expect(p2hdr!.querySelector('.global-hdr')).not.toBeNull()
+  })
+
+  it('per-page header override is preserved after refresh()', () => {
+    const sp = buildExplicit(`
+      <stapled-doc page-width="816px" page-height="1056px" page-gap="0px">
+        <page-header height="48px"><span class="global-hdr">Global</span></page-header>
+        <s-page id="p1">
+          <page-header height="40px"><span class="custom-hdr">Custom</span></page-header>
+          <p>Content</p>
+        </s-page>
+      </stapled-doc>
+    `)
+    sp.refresh()
+    const p1hdr = sp.querySelector('#p1 > page-header')
+    expect(p1hdr).not.toBeNull()
+    expect(p1hdr!.querySelector('.custom-hdr')).not.toBeNull()
+  })
+
   it('skip-header on <s-page> suppresses header for that page', () => {
     const sp = buildExplicit(`
-      <stapled-doc mode="explicit" page-width="816px" page-height="1056px" page-gap="0px">
+      <stapled-doc page-width="816px" page-height="1056px" page-gap="0px">
         <page-header height="48px"><span>H</span></page-header>
         <s-page id="p1" skip-header><p>A</p></s-page>
         <s-page id="p2"><p>B</p></s-page>
@@ -163,7 +206,7 @@ describe('Explicit mode build', () => {
 
   it('resolves <page-number> in header clones', () => {
     const sp = buildExplicit(`
-      <stapled-doc mode="explicit" page-width="816px" page-height="1056px" page-gap="0px">
+      <stapled-doc page-width="816px" page-height="1056px" page-gap="0px">
         <page-header height="48px">
           Page <page-number format="n of total"></page-number>
         </page-header>
@@ -179,7 +222,7 @@ describe('Explicit mode build', () => {
   it('header clone does not retain control attributes', () => {
     // Two pages so page 2 gets the header (skip-first suppresses only page 1)
     const sp = buildExplicit(`
-      <stapled-doc mode="explicit" page-width="816px" page-height="1056px" page-gap="0px">
+      <stapled-doc page-width="816px" page-height="1056px" page-gap="0px">
         <page-header height="48px" skip-first skip-pages="3"><span>H</span></page-header>
         <s-page id="p1"><p>A</p></s-page>
         <s-page id="p2"><p>B</p></s-page>
@@ -195,7 +238,7 @@ describe('Explicit mode build', () => {
 
   it('per-page size override applies to that page only', () => {
     const sp = buildExplicit(`
-      <stapled-doc mode="explicit" page-width="816px" page-height="1056px" page-gap="0px">
+      <stapled-doc page-width="816px" page-height="1056px" page-gap="0px">
         <s-page id="p1"><p>Normal</p></s-page>
         <s-page id="p2" page-width="1056px" page-height="816px"><p>Landscape</p></s-page>
       </stapled-doc>
@@ -212,7 +255,7 @@ describe('Explicit mode build', () => {
     const events: CustomEvent[] = []
     const container = document.createElement('div')
     container.innerHTML = `
-      <stapled-doc mode="explicit" page-width="816px" page-height="1056px" page-gap="0px">
+      <stapled-doc page-width="816px" page-height="1056px" page-gap="0px">
         <s-page><p>A</p></s-page>
         <s-page><p>B</p></s-page>
         <s-page><p>C</p></s-page>
@@ -225,7 +268,6 @@ describe('Explicit mode build', () => {
 
     expect(events).toHaveLength(1)
     expect(events[0]!.detail.pageCount).toBe(3)
-    expect(events[0]!.detail.mode).toBe('explicit')
     expect(events[0]!.detail.pageWidth).toBe(816)
     expect(events[0]!.detail.pageHeight).toBe(1056)
   })
@@ -233,7 +275,7 @@ describe('Explicit mode build', () => {
   describe('refresh()', () => {
     it('cleans up and rebuilds cleanly', () => {
       const sp = buildExplicit(`
-        <stapled-doc mode="explicit" page-width="816px" page-height="1056px" page-gap="0px">
+        <stapled-doc page-width="816px" page-height="1056px" page-gap="0px">
           <page-header height="48px"><span>H</span></page-header>
           <s-page><p>Content</p></s-page>
         </stapled-doc>
@@ -249,9 +291,9 @@ describe('Explicit mode build', () => {
       const headers = sp.querySelectorAll('s-page page-header')
       expect(headers.length).toBe(1)
 
-      // Content wrapper should exist once
-      const contentDivs = sp.querySelectorAll('.sp-page-content')
-      expect(contentDivs.length).toBe(1)
+      // s-page-body should exist once
+      const bodies = sp.querySelectorAll('s-page-body')
+      expect(bodies.length).toBe(1)
     })
   })
 })

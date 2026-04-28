@@ -5,8 +5,12 @@
 Zero-dependency web components for print-accurate multi-page documents in the browser.
 Drop in one script tag. Write pages with HTML. Print to PDF.
 
-Designed for AI-generated documents — solution briefs, reports, pitch decks — where
-predictable, explicit markup matters more than clever inference.
+Designed for documents where you know what's on each page — solution briefs, pitch decks,
+reports, one-pagers, posters, certificates, invoices.
+
+**Stapler is not for long-form paginated prose.** If you're typesetting a book, a dissertation,
+or a document where content length is unknown at authoring time, use Google Docs, Word,
+Pandoc, or LaTeX. Stapler is for documents where the author controls what goes on each page.
 
 ---
 
@@ -19,20 +23,14 @@ and reference it:
 <script src="stapler.js"></script>
 ```
 
-Both files are self-registering. All six custom elements are available immediately after
-the script runs.
+Both files are self-registering. All custom elements are available immediately after the script runs.
 
 ---
 
-## Three modes
-
-### Mode 1 — Explicit pages
-
-Each `<s-page>` is a fixed-size, hard-clipped container. You control the layout.
-Content that overflows is hidden. Best for documents where you know exactly what goes on each page.
+## Quick start
 
 ```html
-<stapled-doc mode="explicit" page-width="8.5in" page-height="11in" page-gap="2rem">
+<stapled-doc page-width="8.5in" page-height="11in" page-gap="2rem">
 
   <page-header height="40px" skip-first>
     <div class="header">My Document · <page-number format="n of total"></page-number></div>
@@ -44,70 +42,23 @@ Content that overflows is hidden. Best for documents where you know exactly what
 
   <s-page skip-header skip-footer>
     <!-- Cover page — no header or footer -->
+    <s-page-body style="padding: 3rem;">
+      <h1>My Document</h1>
+    </s-page-body>
   </s-page>
 
   <s-page>
     <!-- Page 2 — header and footer stamped automatically -->
+    <s-page-body style="padding: 2rem;">
+      <p>Content here.</p>
+    </s-page-body>
   </s-page>
 
-  <s-page>
-    <!-- Page 3 -->
-  </s-page>
-
 </stapled-doc>
 ```
 
-### Mode 2 — Flow with page breaks
-
-Content flows in a single column. `<page-spacer>` elements bridge the current position
-to the next page's content area — accounting for header, footer, and gap zones.
-Headers and footers are overlaid via an absolutely-positioned frame layer.
-
-```html
-<stapled-doc mode="flow" page-width="8.5in" page-height="11in" page-gap="2rem">
-
-  <page-header height="36px">
-    <div class="header">My Report · Page <page-number format="n"></page-number></div>
-  </page-header>
-
-  <page-footer height="24px">
-    <div class="footer">Confidential</div>
-  </page-footer>
-
-  <h1>Executive Summary</h1>
-  <p>...</p>
-  <p>...</p>
-
-  <page-spacer></page-spacer>
-
-  <h1>Section 2</h1>
-  <p>...</p>
-
-</stapled-doc>
-```
-
-### Mode 3 — Pure flow
-
-No `<page-spacer>` elements. The library measures your content, computes page boundaries,
-and injects spacer elements to push content out of header/footer/gap zones automatically.
-Best for long-form content where you don't control where page breaks fall.
-
-```html
-<stapled-doc mode="flow" page-width="8.5in" page-height="11in" page-gap="2rem">
-
-  <page-header height="36px">
-    <div class="header">Checklist · <page-number format="n of total"></page-number></div>
-  </page-header>
-
-  <h1>Full Checklist</h1>
-  <ul>
-    <li>Item one</li>
-    <li>Item two</li>
-    <!-- ...many items... -->
-  </ul>
-
-</stapled-doc>
-```
+Each `<s-page>` is a fixed-size, hard-clipped container sized from `page-width` × `page-height`.
+Content that overflows is hidden — that's by design. Authors are responsible for fitting content.
 
 ---
 
@@ -115,58 +66,83 @@ Best for long-form content where you don't control where page breaks fall.
 
 ### `<stapled-doc>`
 
-| Attribute    | Type                    | Default  | Description |
-|--------------|-------------------------|----------|-------------|
-| `mode`       | `explicit` \| `flow`   | auto     | **Required for AI-generated documents.** Explicit = `<s-page>` children. Flow = freeform content. |
-| `page-width` | CSS length              | `8.5in`  | Page width |
-| `page-height`| CSS length              | `11in`   | Page height |
-| `page-gap`   | CSS length              | `2rem`   | Gap between pages |
-
-Auto-detection fallback (for hand-authored HTML only): `<s-page>` children → explicit;
-`<page-spacer>` present → flow-breaks; neither → pure flow.
+| Attribute    | Type            | Default  | Description |
+|--------------|-----------------|----------|-------------|
+| `page-width` | CSS length      | **required** | Page width |
+| `page-height`| CSS length      | **required** | Page height |
+| `page-gap`   | CSS length      | `2rem`   | Gap between pages on screen |
+| `preview`    | `"print"`       | —        | Preview mode — removes gap and shadows |
 
 ---
 
 ### `<page-header>` and `<page-footer>`
 
 Defined **once** as direct children of `<stapled-doc>`. The library clones them into every
-page automatically, then removes the originals from the DOM. Style them with your own CSS —
-the library adds no colors, fonts, or padding to header/footer content.
+page automatically, then removes the originals from the DOM. Style them with your own CSS.
 
 | Attribute    | Type       | Default | Description |
 |--------------|------------|---------|-------------|
-| `height`     | CSS length | auto    | If provided, used directly. If omitted, measured via off-screen clone. Providing it is faster and more reliable. |
+| `height`     | CSS length | **required** | Height of the header/footer |
 | `skip-first` | boolean    | false   | Suppress on page 1 |
 | `skip-pages` | `"1,3,5"` | —       | Comma-separated 1-indexed page numbers to suppress |
 
 ---
 
-### `<s-page>` *(explicit mode only)*
+### `<s-page>`
 
-A hard-clipped page container. The library sets `width` and `height` from `<stapled-doc>` attributes
-and wraps existing children in a flex-column layout.
+A hard-clipped page container. Width and height are set from `<stapled-doc>` attributes.
+Renders as a flex column: header → body → footer.
 
-| Attribute     | Type       | Default                  | Description |
-|---------------|------------|--------------------------|-------------|
-| `skip-header` | boolean    | false                    | Suppress header on this page |
-| `skip-footer` | boolean    | false                    | Suppress footer on this page |
-| `page-width`  | CSS length | from `<stapled-doc>`   | Per-page override (e.g. landscape insert) |
-| `page-height` | CSS length | from `<stapled-doc>`   | Per-page override |
+| Attribute     | Type       | Default                | Description |
+|---------------|------------|------------------------|-------------|
+| `skip-header` | boolean    | false                  | Suppress header on this page |
+| `skip-footer` | boolean    | false                  | Suppress footer on this page |
+| `page-width`  | CSS length | from `<stapled-doc>` | Per-page override (e.g. landscape insert) |
+| `page-height` | CSS length | from `<stapled-doc>` | Per-page override |
 
 ---
 
-### `<page-spacer>` *(flow mode only)*
+### `<s-page-body>`
 
-Forces subsequent content to start at the next page's content area. Renders a faint
-dashed border as an authoring aid; hidden in print. No attributes.
+The body slot inside `<s-page>`. Takes all remaining space between header and footer.
+Style it with `padding`, `max-width`, `overflow`, etc.
+
+```html
+<s-page>
+  <s-page-body style="padding: 2rem 2.5rem;">
+    <p>Your content here.</p>
+  </s-page-body>
+</s-page>
+```
+
+If you omit `<s-page-body>`, Stapler wraps your content automatically. The auto-wrapper
+has no padding — add a `<s-page-body>` explicitly when you need it.
+
+---
+
+### Per-page header/footer override
+
+An `<s-page>` can contain its own `<page-header>` or `<page-footer>` as a direct child.
+When present it overrides the document-level template for that page only:
+
+```html
+<s-page>
+  <page-header height="40px">
+    <div class="cover-header">Special Cover Header</div>
+  </page-header>
+  <s-page-body style="padding: 2rem;">
+    <!-- page content -->
+  </s-page-body>
+</s-page>
+```
+
+The document-level `skip-first` / `skip-pages` attributes still work for pages without overrides.
 
 ---
 
 ### `<page-number>`
 
 Inline placeholder for use inside `<page-header>` or `<page-footer>` templates.
-Resolved automatically when the template is stamped. Renders `?` as a fallback
-when used outside a `<stapled-doc>`.
 
 | `format` value | Output example |
 |----------------|---------------|
@@ -177,22 +153,29 @@ when used outside a `<stapled-doc>`.
 
 ---
 
-## CSS custom properties
+### `preview="print"` attribute
 
-Set these on the `<stapled-doc>` element to tune the visual chrome:
+When set, renders the on-screen view to match the printed PDF: no page gap, no shadows,
+white background. Use during layout iteration to avoid repeated print previews.
+
+```html
+<stapled-doc page-width="8.5in" page-height="11in" preview="print">
+  ...
+</stapled-doc>
+```
+
+---
+
+## CSS custom properties
 
 | Property             | Default                        | Description |
 |----------------------|--------------------------------|-------------|
 | `--sp-page-gap`      | set from `page-gap` attribute  | Gap between pages |
-| `--sp-frame-shadow`  | `0 4px 20px rgba(0,0,0,.12)`  | Shadow on page frames; set to `none` to remove |
+| `--sp-frame-shadow`  | `0 4px 20px rgba(0,0,0,.12)`  | Shadow on page frames |
 
 ---
 
 ## Styling headers and footers
-
-The library injects structural layout rules only. All visual styling — colors, fonts,
-padding, borders — belongs in your stylesheet. Style against `page-header` and
-`page-footer` directly:
 
 ```css
 page-header {
@@ -225,20 +208,13 @@ Open the document in Chrome or Edge, press **Cmd/Ctrl+P**, set:
 - Margins: None
 - Background graphics: on
 
-For programmatic PDF generation, use headless Chrome:
+For programmatic PDF generation:
 
 ```bash
 chrome --headless --print-to-pdf=output.pdf --no-margins your-document.html
 ```
 
-Add this to your document's `<style>` to pin the page size:
-
-```css
-@page {
-  size: 8.5in 11in;   /* match page-width × page-height on <stapled-doc> */
-  margin: 0;
-}
-```
+> Stapler automatically injects the `@page { size: …; margin: 0; }` rule. No manual `@page` rule needed.
 
 ---
 
@@ -254,12 +230,12 @@ document.querySelector('stapled-doc').refresh()
 
 ### `sp:ready` event
 
-Fired on `<stapled-doc>` after each build (including after `refresh()`). Bubbles.
+Fired on `<stapled-doc>` after each build. Bubbles.
 
 ```js
 document.querySelector('stapled-doc').addEventListener('sp:ready', (e) => {
   console.log(e.detail)
-  // { pageCount: 3, mode: 'explicit', pageWidth: 816, pageHeight: 1056 }
+  // { pageCount: 3, pageWidth: 816, pageHeight: 1056 }
 })
 ```
 
@@ -277,7 +253,7 @@ document.querySelector('stapled-doc').addEventListener('sp:ready', (e) => {
 ```bash
 npm install
 npm run build        # → dist/stapler.js + dist/stapler.min.js
-npm run dev          # watch mode with inline sourcemaps
+npm run dev          # watch mode
 npm run test         # run all tests
 npm run typecheck    # type-check without compiling
 ```
@@ -287,22 +263,51 @@ IIFE with no exports and no runtime dependencies.
 
 ---
 
+## Migration from 0.x
+
+### Breaking changes in v0.5.0
+
+- **`mode` attribute removed.** There is only one mode (explicit). Remove `mode="explicit"` from your markup. If you were using `mode="flow"`, see below.
+- **`page-width` and `page-height` are now required.** Previously they had defaults.
+- **`<page-spacer>` element removed.**
+- **`<s-page-body>` added.** The body slot for page content. Auto-created if you omit it.
+- **`sp:ready` event `detail.mode` removed.** Only `pageCount`, `pageWidth`, `pageHeight`.
+
+### Migrating from explicit mode (simple)
+
+Remove `mode="explicit"` from your `<stapled-doc>` tag. Optionally add `<s-page-body>` wrappers for padding control:
+
+```html
+<!-- before -->
+<stapled-doc mode="explicit" page-width="8.5in" page-height="11in">
+  <s-page>
+    <div style="padding: 2rem;">Content</div>
+  </s-page>
+</stapled-doc>
+
+<!-- after -->
+<stapled-doc page-width="8.5in" page-height="11in">
+  <s-page>
+    <s-page-body style="padding: 2rem;">Content</s-page-body>
+  </s-page>
+</stapled-doc>
+```
+
+### Migrating from flow mode
+
+Flow mode has been removed. You have two options:
+
+1. **Convert to explicit mode:** Wrap each logical page's content in an `<s-page>`. This works well for documents where you know the content of each page.
+
+2. **Pin to v0.4.x:** If you need flow mode for long-form content, keep the v0.4 build. For new documents of that type, use Google Docs, Word, Pandoc, or LaTeX — tools built for paginated prose.
+
+---
+
 ## Known limitations
 
-**Explicit mode: content that overflows a page is clipped.** The library sets
-`overflow: hidden` on `<s-page>`. Authors are responsible for content fitting within
-`page-height − header-height − footer-height`.
-
-**Pure flow: block-level granularity only.** Spacers are injected between block-level
-children. A paragraph taller than the remaining content area on a page is moved
-to the next page in its entirety, leaving whitespace at the bottom.
-
-**Font and image timing.** The build waits for `document.fonts.ready` and decodes all
-`<img>` descendants before measuring. Fonts loaded via `@import` after `DOMContentLoaded`
-may not be ready in time. Call `refresh()` if measurements appear wrong after late-loading fonts.
-
-**Flow mode: uniform page dimensions only.** Per-page size overrides (`page-width`,
-`page-height` on `<s-page>`) are supported in explicit mode only.
+**Content that overflows a page is clipped.** Stapler sets `overflow: hidden` on `<s-page>`.
+Authors are responsible for content fitting within `page-height − header-height − footer-height`.
+This is intentional — Stapler is for documents where the author controls what's on each page.
 
 ---
 

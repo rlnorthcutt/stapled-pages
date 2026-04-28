@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Demos — Stapler</title>
-  <meta name="description" content="Live demos of the three Stapler rendering modes: Explicit, Flow, and Pure Flow.">
+  <meta name="description" content="Live demos of Stapler: explicit-mode documents rendered in the browser with print-accurate layout.">
   <link rel="stylesheet" href="ivy.full.min.css">
   <link rel="stylesheet" href="lattice.full.min.css">
   <link rel="stylesheet" href="custom.css">
@@ -12,6 +12,34 @@
   <link rel="icon" type="image/png" sizes="32x32" href="logo-32x32.png">
   <link rel="apple-touch-icon" href="logo-192x192.png">
   <script src="dark-mode-toggle.min.js" defer></script>
+  <style>
+    .demo-card {
+      position: relative; /* Anchor for the link */
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    /* This stretches the link to cover the entire .demo-card */
+    .main-link::after {
+    content: "";
+    position: absolute;
+    /* This forces the clickable area to the edges of the .demo-card */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    
+    /* This is the magic bit: */
+    display: block;
+    z-index: 999; 
+    cursor: pointer;
+  }
+
+    /* Hover state: Applied to the card when the link is focused or hovered */
+    .demo-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    }
+  </style> 
 </head>
 <body>
 
@@ -35,17 +63,16 @@
 
     <section class="hero">
       <p class="kicker">The Showroom</p>
-      <h1>Three modes. Three documents.</h1>
+      <h1>One mode. Two documents.</h1>
       <p class="hero-sub">Each demo is a live rendering — no screenshots, no iframes. The library runs in your browser and lays out the document in real time.</p>
     </section>
 
     <section class="section-full">
       <div class="section-inner">
-        <div class="grid col-3 gap-4">
-
+        <div class="grid col-2 gap-4">
           <div class="card demo-card">
             <header>
-              <p class="kicker">Demo 1 · Explicit Mode</p>
+              <p class="kicker">Demo 1</p>
               <h3>The Staple</h3>
               <p class="muted">A 120-Year Journey to Perfection</p>
             </header>
@@ -56,41 +83,24 @@
               <li>Page numbers in <code>n of total</code> format</li>
             </ul>
             <footer>
-              <a href="demo-explicit.html" role="button" data-variant="primary">View Demo</a>
+              <a href="demo-stapler.html" role="button" data-variant="primary" class="main-link">View Demo</a>
             </footer>
           </div>
 
           <div class="card demo-card">
             <header>
-              <p class="kicker">Demo 2 · Flow Mode</p>
-              <h3>The Papyrus Protocol</h3>
-              <p class="muted">A History of Binding</p>
+              <p class="kicker">Demo 2</p>
+              <h3>An Apology for Printers</h3>
+              <p class="muted">Benjamin Franklin, 1731</p>
             </header>
-            <p>A multi-section whitepaper where <code>&lt;page-spacer&gt;</code> elements ensure each chapter starts on a new page. Headers and footers are stamped automatically.</p>
+            <p>A pamphlet typeset in period typefaces across 8 explicit pages. Each section occupies its own page, with a cover, table of contents, numbered arguments, and colophon.</p>
             <ul class="demo-card-list">
-              <li>Five chapters, each forced to its own page</li>
-              <li>Header and footer on every page</li>
-              <li>Page numbers in running header</li>
+              <li>8 pages in explicit mode</li>
+              <li>Period typefaces via Google Fonts</li>
+              <li>Running header with page numbers</li>
             </ul>
             <footer>
-              <a href="demo-flow.html" role="button" data-variant="primary">View Demo</a>
-            </footer>
-          </div>
-
-          <div class="card demo-card">
-            <header>
-              <p class="kicker">Demo 3 · Pure Flow</p>
-              <h3>Flatland</h3>
-              <p class="muted">A Romance of Many Dimensions</p>
-            </header>
-            <p>Long-form prose with zero <code>&lt;page-spacer&gt;</code> elements. The library measures every block, computes all page boundaries, and injects spacers automatically.</p>
-            <ul class="demo-card-list">
-              <li>No manual page breaks whatsoever</li>
-              <li>All spacers injected automatically at runtime</li>
-              <li>Running header with total page count</li>
-            </ul>
-            <footer>
-              <a href="demo-pure-flow.html" role="button" data-variant="primary">View Demo</a>
+              <a href="demo-apology.html" role="button" data-variant="primary" class="main-link">View Demo</a>
             </footer>
           </div>
 
